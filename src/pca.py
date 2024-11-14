@@ -19,7 +19,7 @@ def intrinsic_dimension(dataset_path, embed, threshold=0.95):
     dataset = load_dataset(dataset_path)
     threshold = 0.95
     dimensions = []
-    for sample in dataset['train'].select(range(100)):
+    for sample in dataset['train'].select(range(1000)):
         vectors = embed_text(sample["text"], embed)
         prev = len(dimensions)
         for i in range(2, 25):
