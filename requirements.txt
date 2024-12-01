@@ -1,0 +1,8 @@
+nltk
+sklearn
+torch
+transformers
+sentence_transformers
+gensim
+datasets
+numpy
