@@ -14,13 +14,15 @@ def generate_prompt(truncated_text):
         {"role": "system", "content": (
             "You are an article completion assistant. You MUST ALWAYS format your response with [ARTICLE] and [/ARTICLE] tokens. "
             "Your completion should be natural and coherent with the given text."
+            "Your completion should be detailled enough to be a daily news article"
         )},
         {"role": "user", "content": (
             "Complete the following article. Your response MUST:\n"
             "1. Start with [ARTICLE]\n"
             "2. End with [/ARTICLE]\n"
             "3. Include the given text at the start\n"
-            "4. Complete it naturally\n\n"
+            "4. Detail the article as much as needed\n"
+            "5. Complete it naturally\n\n"
             "Here's the text to complete:\n"
             "[ARTICLE]\n"
             f"{truncated_text}\n"
@@ -30,6 +32,7 @@ def generate_prompt(truncated_text):
             "I understand that I must:\n"
             "- Keep the [ARTICLE] and [/ARTICLE] tokens\n"
             "- Include the original text\n"
+            "- Detail the article as much as needed\n"
             "- Complete it naturally\n"
             "I will now provide the completion."
         )},
@@ -49,12 +52,17 @@ def parse_article_content(text):
         
     return text[start_index:end_index].strip()
 
-def send_openai(message, model="gpt-3.5-turbo-0125"):
+
+def send_openai(message, model="gpt-3.5-turbo-0125", max_tokens=800, temperature=1):
     response = client.chat.completions.create(
         model=model,
         messages=message,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        top_p=0.9
     )
     return response.choices[0].message.content
+
 
 def random_truncate(text, min_n=30, max_n=50):
     n = random.randint(min_n, max_n)
