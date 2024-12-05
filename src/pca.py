@@ -1,4 +1,5 @@
 from datasets import load_dataset
+from tqdm import tqdm
 import numpy as np
 from sklearn.decomposition import PCA
 import nltk
@@ -17,7 +18,7 @@ def intrinsic_dimension(texts, embedding_model, embedding_type, threshold=0.95, 
         n_components = 25
     elif embedding_type == "token_transformer":
         embeddings = token_transformer_emb(texts, embedding_model)
-        n_components = 512
+        n_components = 200
     elif embedding_type == "sentence_transformer":
         embeddings = sentence_transformer_emb(texts, embedding_model)
         n_components = 768
@@ -26,7 +27,7 @@ def intrinsic_dimension(texts, embedding_model, embedding_type, threshold=0.95, 
 
     threshold = 0.95
     dimensions = []
-    for samples in embeddings:
+    for samples in tqdm(embeddings):
         samples = np.array(samples)
         prev = len(dimensions)
         pca = PCA(n_components=n_components)
@@ -52,38 +53,22 @@ def intrinsic_dimension(texts, embedding_model, embedding_type, threshold=0.95, 
 
 if __name__ == "__main__":
     nltk.download("punkt")
-    human_dataset_path = "abisee/cnn_dailymail"
-    ai_dataset_path = "HuggingFaceTB/cosmopedia-100k"
-    word2vec_path = "glove-twitter-25"
-    sentence_transformers_path = "multi-qa-mpnet-base-dot-v1"
+    dataset_path = "ilyasoulk/ai-vs-human"
     word_transformer_path = "bert-base-uncased"
 
-    ai_ds = load_dataset(ai_dataset_path, split="train")
-    hm_ds = load_dataset(human_dataset_path, '3.0.0', split="train")
-    ai_ds = ai_ds["text"]
-    hm_ds = hm_ds["article"]
+    ds = load_dataset(dataset_path, split="train")
+    ai_ds = ds["ai"]
+    hm_ds = ds["human"]
 
     # intrinsic_dimension(human_dataset_path, sentence_transformers_path, "sentence_transformer", elements=100)
     avg_dim_ai_bert = intrinsic_dimension(ai_ds, word_transformer_path, "token_transformer")
     avg_dim_human_bert = intrinsic_dimension(hm_ds, word_transformer_path, "token_transformer")
-    avg_dim_human_word2vec = intrinsic_dimension(ai_ds, word2vec_path, "word2vec")
-    avg_dim_ai_word2vec = intrinsic_dimension(hm_ds, word2vec_path, "word2vec")
 
 
     print("Results")
-    print(f"Average dimension using bert on synthetic dataset {ai_dataset_path.split('/')[-1]} : {avg_dim_ai_bert}")
-    print(f"Average dimension using bert on human dataset {human_dataset_path.split('/')[-1]}: {avg_dim_human_bert}")
-    print(f"Average dimension using word2vec on synthetic dataset : {avg_dim_ai_word2vec}")
-    print(f"Average dimension using word2vec on human dataset : {avg_dim_human_word2vec}")
+    print(f"Average dimension using bert on synthetic dataset {dataset_path.split('/')[-1]} : {avg_dim_ai_bert}")
+    print(f"Average dimension using bert on human dataset {dataset_path.split('/')[-1]}: {avg_dim_human_bert}")
 
 # Results
-
-# Average dimension using bert on synthetic dataset cosmopedia-100k : 208.24
-# Average dimension using bert on human dataset imdb : 169.36
-# Average dimension using word2vec on synthetic dataset cosmopedia-100k : 19.2
-# Average dimension using word2vec on human dataset imdb : 17.55
-
-# Average dimension using bert on synthetic dataset cosmopedia-100k : 208.24
-# Average dimension using bert on human dataset cnn_dailymail: 213.11
-# Average dimension using word2vec on synthetic dataset cosmopedia-100k : 18.69
-# Average dimension using word2vec on human dataset cnn_dailymail : 19.2
+# Average dimension using bert on synthetic dataset ai-vs-human : 153.73
+# Average dimension using bert on human dataset ai-vs-human: 196.17
