@@ -19,7 +19,7 @@ def word2vec_emb(texts, embedding_model):
     return res
 
 
-def token_transformer_emb(texts, embedding_model):
+def token_transformer_emb(texts, embedding_model, max_tokens=200):
     tokenizer = AutoTokenizer.from_pretrained(embedding_model)
     embedder = AutoModel.from_pretrained(embedding_model)
 
@@ -27,6 +27,8 @@ def token_transformer_emb(texts, embedding_model):
         tokenizer.pad_token_id = tokenizer.eos_token_id
 
     tokens = tokenizer(texts, return_tensors="pt", truncation=True, padding=True)
+    max_tokens = min(max_tokens, len(tokens["input_ids"]))
+    tokens["input_ids"] = tokens["input_ids"][:max_tokens]
 
     with torch.no_grad():
         outputs = embedder(**tokens)
