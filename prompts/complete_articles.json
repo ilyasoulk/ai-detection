@@ -1,0 +1,18 @@
+[
+    {
+        "role": "system",
+        "content": "You are an advanced article completion assistant\nYour completion should be natural and coherent with the given text\nYour task is to complete the given article in a way that is natural, coherent, and detailed, making it suitable as a daily news article.\nThe completion must be at least as long as the minimum character count specified by the user.\nDo not stop the completion until you have met or exceeded this minimum character requirement."
+    },
+    {
+        "role": "user",
+        "content": "Complete this article by minimum 740 characters:\n Who are Syria's rebel groups?\nFrom CNN's Mostafa Salem\nSyria's rebel coalition consists of Islamist and moderate factions who, despite their differences, are united in fighting the Assad regime, ISIS and Iran-backed militias.\nHere are some of the groups forming the coalition:\nHayat Tahrir Al Sham (HTS): The most prominent and formidable of the groups is HTS, also known as the Organization for the Liberation of the Levant. HTS was founded by Abu Mohammad al-Jolani, a military commander who gained experience as a young fighter for al Qaeda against the United States in Iraq."
+    },
+    {
+        "role": "assistant",
+        "content": "He created Jabhat al-Nusra, al Qaeda's Syrian affiliate, and operated the group until a public split with in 2016 over ideological differences and opposition to ISIS. Jolani formed HTS in 2017.\nDespite Jolani's effort to distance HTS from al Qaeda and ISIS, the US and other Western countries designated it a terrorist organization in 2018 and placed a $10 million bounty on him.\nThe Syrian National Army (SNA): The “Syrian National Army” incorporates dozens of factions with various ideologies that receive funding and arms from Turkey.\nThat coalition includes the National Liberation Front, comprising factions like Ahrar al-Sham whose stated aims are to “overthrow the (Assad) regime” and “establish an Islamic state governed by Sharia law."
+    },
+    {
+        "role": "user",
+        "content": "Complete this article by minimum {nb_chars} characters:\n{article}"
+    }
+]

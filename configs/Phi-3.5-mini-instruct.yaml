@@ -1,0 +1,6 @@
+---
+model: microsoft/Phi-3.5-mini-instruct
+sampling_params:
+  temperature: 0.3
+  max_tokens: 1000
+batch_size: 32

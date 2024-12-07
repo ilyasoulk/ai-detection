@@ -1,0 +1,6 @@
+---
+model: Qwen/Qwen2.5-1.5B-Instruct
+sampling_params:
+  temperature: 0.3
+  max_tokens: 1000
+batch_size: 32
