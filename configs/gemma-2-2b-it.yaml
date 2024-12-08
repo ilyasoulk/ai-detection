@@ -7,3 +7,4 @@ sampling_params:
   max_tokens: 1000
 batch_size: 5000
 one_batch: true
+prepend_system_role_to_user: True

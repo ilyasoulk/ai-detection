@@ -10,11 +10,18 @@ import yaml
 def generate_prompts(article: str, nb_chars: int):
     with open(config["prompt_path"], "r") as f:
         messages = json.load(f)
+
+    assert messages[0]["role"] == "system"
+
     for message in messages:
         if "content" in message and isinstance(message["content"], str):
             message["content"] = message["content"].format(
                 article=article, nb_chars=nb_chars
             )
+            if config["prepend_system_role_to_user"]:
+                message["content"] = messages[0]["content"] + "\n" + message["content"]
+    if config["prepend_system_role_to_user"]:
+        return messages[1:]
     return messages
 
 
