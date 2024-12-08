@@ -14,6 +14,8 @@ def generate_prompts(article: str, nb_chars: int):
     assert messages[0]["role"] == "system"
 
     for message in messages:
+        if message["role"] != "user":
+            continue
         if "content" in message and isinstance(message["content"], str):
             message["content"] = message["content"].format(
                 article=article, nb_chars=nb_chars
