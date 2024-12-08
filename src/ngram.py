@@ -5,58 +5,159 @@ from nltk import sent_tokenize
 import nltk
 import numpy as np
 from datasets import load_dataset
+import argparse
 
-def truncate_to_n_sentences(text, n_sentences=10):
-    sentences = sent_tokenize(text)
-    return ' '.join(sentences[:n_sentences])
+from datasets import load_dataset
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import classification_report, confusion_matrix
+from nltk import sent_tokenize
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import seaborn as sns
+import nltk
+
+class TextAnalyzer:
+    def __init__(self, n_range=[2, 3, 4], threshold=1e-10):
+        self.n_range = n_range
+        self.threshold = threshold
+        self.stats = None
+        self.features = None
+        nltk.download('punkt')
+
+    def create_ngram_matrix(self, text, n):
+        corpus = sent_tokenize(text)
+        vectorizer = CountVectorizer(ngram_range=(n, n))
+        ngram_matrix = vectorizer.fit_transform(corpus)
+        return ngram_matrix.toarray()
+
+    def rank_with_svd(self, s):
+        return np.sum(s > self.threshold * s[0])
+
+    def analyze_text(self, text):
+        results = {}
+        for n in self.n_range:
+            ngram_matrix = self.create_ngram_matrix(text, n)
+            s = np.linalg.svd(ngram_matrix, compute_uv=False)
+            
+            results[f'rank_n{n}'] = self.rank_with_svd(s)
+            results[f'largest_sv_n{n}'] = s[0]
+            results[f'sv_ratio_n{n}'] = s[0]/s[-1] if len(s) > 1 else 0
+        
+        return results
+
+    def process_dataset(self, dataset):
+        all_results = []
+        
+        for sample in tqdm(dataset):
+            ai_results = self.analyze_text(sample["ai"])
+            ai_results['type'] = 'ai'
+            ai_results['text_length'] = len(sample["ai"])
+            
+            human_results = self.analyze_text(sample["human"])
+            human_results['type'] = 'human'
+            human_results['text_length'] = len(sample["human"])
+            
+            all_results.extend([ai_results, human_results])
+            
+        return pd.DataFrame(all_results)
+
+    def visualize_results(self, df):
+        plt.figure(figsize=(12,6))
+        sns.boxplot(data=df.melt(id_vars=['type'], 
+                              value_vars=[f'rank_n{n}' for n in self.n_range]),
+                  x='variable', y='value', hue='type')
+        plt.title('Rank Distribution by N-gram Size')
+        plt.show()
+
+    def compute_training_stats(self, df):
+        stats = {}
+        features = [f'rank_n{n}' for n in self.n_range] + \
+                  [f'largest_sv_n{n}' for n in self.n_range]
+        
+        for type_ in ['ai', 'human']:
+            stats[type_] = {
+                'mean': df[df['type'] == type_][features].mean(),
+                'std': df[df['type'] == type_][features].std()
+            }
+        
+        self.stats = stats
+        self.features = features
+
+    def predict_text(self, text):
+        if self.stats is None:
+            raise ValueError("Must compute training stats before prediction")
+            
+        results = self.analyze_text(text)
+        results['text_length'] = len(text)
+        
+        scores = {'ai': 0, 'human': 0}
+        for type_ in ['ai', 'human']:
+            for feature in self.features:
+                z_score = abs(results[feature] - self.stats[type_]['mean'][feature]) / self.stats[type_]['std'][feature]
+                scores[type_] += z_score
+                
+        return 0 if scores['ai'] < scores['human'] else 1
+
+    def evaluate_test_set(self, test_dataset):
+        predictions = []
+        true_labels = []
+        
+        for sample in tqdm(test_dataset):
+            ai_pred = self.predict_text(sample['ai'])
+            human_pred = self.predict_text(sample['human'])
+            
+            predictions.extend([ai_pred, human_pred])
+            true_labels.extend([0, 1])
+        
+        print("\nClassification Report:")
+        print(classification_report(true_labels, predictions))
+        
+        cm = confusion_matrix(true_labels, predictions)
+        print("\nConfusion Matrix:")
+        print("                 Predicted")
+        print("                 AI     Human")
+        print(f"Actual AI     {cm[0][0]:6d} {cm[0][1]:8d}")
+        print(f"Actual Human  {cm[1][0]:6d} {cm[1][1]:8d}")
+        
+        return predictions
 
 
-def get_ngram_rank(text, n=2):
-    corpus = sent_tokenize(text)
-    len_corpus = len(corpus) 
-    vectorizer = CountVectorizer(ngram_range=(n, n))
-    ngram_matrix = vectorizer.fit_transform(corpus)
-    ngram_matrix = ngram_matrix.toarray()
-    rank = np.linalg.matrix_rank(ngram_matrix)
-    return rank, len_corpus
 
-
-def main():
-    nltk.download("punkt")
-    dataset_path = "ilyasoulk/ai-vs-human"
-    n_elements = 100
-
-
-    ds = load_dataset(dataset_path, split="train")
-    ai_ds = ds["ai"][:n_elements]
-    hm_ds = ds["human"][:n_elements]
-
-    ai_ranks, total_len_ai = 0, 0
-    hm_ranks, total_len_hm = 0, 0
-    n_sentences = 10
-    for hm, ai in zip(hm_ds, ai_ds):
-        ai_truncated = truncate_to_n_sentences(ai, n_sentences)
-        hm_truncated = truncate_to_n_sentences(hm, n_sentences)
-
-        ai_rank, len_ai = get_ngram_rank(ai_truncated)
-        hm_rank, len_hm = get_ngram_rank(hm_truncated)
-
-        ai_ranks += ai_rank
-        hm_ranks += hm_rank
-        total_len_ai += len_ai
-        total_len_hm += len_hm
-
-    print(f"Average rank of ngram matrix for AI dataset : {dataset_path.split('/')[-1]} = {ai_ranks / n_elements}")
-    print(f"Average rank of ngram matrix for Human dataset : {dataset_path.split('/')[-1]} = {hm_ranks / n_elements}")
-    print(f"Average length of {dataset_path.split('/')[-1]} : {total_len_ai / n_elements}")
-    print(f"Average length of {dataset_path.split('/')[-1]} : {total_len_hm / n_elements}")
-
-
-# Average rank of ngram matrix for AI dataset : ai-vs-human = 8.49
-# Average rank of ngram matrix for Human dataset : ai-vs-human = 9.86
-# Average length of ai-vs-human : 8.55
-# Average length of ai-vs-human : 9.95
+def split_dataset_random(dataset, seed=42):
+    split = dataset.train_test_split(test_size=0.2, seed=seed)
+    return {
+        'train': split['train'],
+        'validation': split['test']
+    }
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Load config for dataset processing")
+    parser.add_argument(
+        "--dataset_path", type=str, required=True, help="Path to the dataset or huggingface id"
+    )
+
+    args = parser.parse_args()
+    dataset_path = args.dataset_path
+
+    ds = load_dataset(dataset_path, split="train")
+    ds = split_dataset_random(ds)
+
+    # Initialize analyzer
+    analyzer = TextAnalyzer()
+
+    # Process training data
+    train_df = analyzer.process_dataset(ds["train"])
+    train_df.to_csv('analysis_results.csv', index=False)
+
+    # Visualize results
+    analyzer.visualize_results(train_df)
+
+    # Compute stats for prediction
+    analyzer.compute_training_stats(train_df)
+
+    # Evaluate on test set
+    predictions = analyzer.evaluate_test_set(ds["validation"])
+    # 70% accuracy
