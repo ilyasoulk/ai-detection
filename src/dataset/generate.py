@@ -57,6 +57,8 @@ def generate_dataset():
         articles = batch["article"]
         ai_human_articles = process_articles(articles)
         datas.extend(ai_human_articles)
+        if config["one_batch"]:
+            break
     directory = f'{config["directory"]}/{config["model"]}'
     os.makedirs(directory, exist_ok=True)
     with open(f"{directory}/synthetic_reporter.json", "w") as f:
