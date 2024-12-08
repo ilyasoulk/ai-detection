@@ -1,5 +1,5 @@
 ---
-model: Qwen/Qwen2.5-1.5B-Instruct
+model: google/gemma-2-2b-it
 sampling_params:
   temperature: 0.5
   presence_penalty: 0.5
