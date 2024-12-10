@@ -22,10 +22,25 @@ To create synthetic datasets for training and evaluation, we used the CNN/Daily 
 
 Different models were used for data generation, and the datasets are named accordingly. You can explore the datasets [here on Hugging Face](https://huggingface.co/collections/zcamz/ai-vs-human-6754d445b3826df8fd547c0e).
 
-## N-gram Method Results
-Below are the evaluation results for the n-gram method on various datasets:
+## Results Summary
+Below is a quick overview of the evaluation results for the n-gram method on various datasets:
 
-### Dataset: `zcamz/ai-vs-human-google-gemma-2-2b-it`
+| Dataset Name                               | Accuracy | F1-Score (Class 0) | F1-Score (Class 1) |
+|-------------------------------------------|----------|--------------------|--------------------|
+| `zcamz/ai-vs-human-google-gemma-2-2b-it`  | 71%      | 72%                | 69%                |
+| `zcamz/ai-vs-human-Qwen-Qwen2.5-1.5B`     | 69%      | 63%                | 73%                |
+| `zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-360M` | 89% | 89%                | 89%                |
+| `zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-1.7B` | 75% | 75%                | 76%                |
+| `zcamz/ai-vs-human-meta-llama-Llama-3.2-1B` | 64% | 65%                | 63%                |
+
+### Key Insights
+- The `HuggingFaceTB-SmolLM2-360M` dataset achieved the highest accuracy of 89%, showcasing the potential of the n-gram method on smaller model outputs.
+- Performance varies across datasets, influenced by the size and characteristics of the language models used for text generation.
+
+### Detailed Results
+<details>
+<summary>Click to expand results for `zcamz/ai-vs-human-google-gemma-2-2b-it`</summary>
+
 **Classification Report:**
 ```
               precision    recall  f1-score   support
@@ -45,7 +60,11 @@ Actual Human     759      241
 Actual AI        347      653
 ```
 
-### Dataset: `zcamz/ai-vs-human-Qwen-Qwen2.5-1.5B-Instruct`
+</details>
+
+<details>
+<summary>Click to expand results for `zcamz/ai-vs-human-Qwen-Qwen2.5-1.5B`</summary>
+
 **Classification Report:**
 ```
               precision    recall  f1-score   support
@@ -65,7 +84,11 @@ Actual Human     539      461
 Actual AI        165      835
 ```
 
-### Dataset: `zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-360M-Instruct`
+</details>
+
+<details>
+<summary>Click to expand results for `zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-360M`</summary>
+
 **Classification Report:**
 ```
               precision    recall  f1-score   support
@@ -85,7 +108,11 @@ Actual Human     874      126
 Actual AI         92      908
 ```
 
-### Dataset: `zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-1.7B-Instruct`
+</details>
+
+<details>
+<summary>Click to expand results for `zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-1.7B`</summary>
+
 **Classification Report:**
 ```
               precision    recall  f1-score   support
@@ -105,7 +132,11 @@ Actual Human     731      269
 Actual AI        223      777
 ```
 
-### Dataset: `zcamz/ai-vs-human-meta-llama-Llama-3.2-1B-Instruct`
+</details>
+
+<details>
+<summary>Click to expand results for `zcamz/ai-vs-human-meta-llama-Llama-3.2-1B`</summary>
+
 **Classification Report:**
 ```
               precision    recall  f1-score   support
@@ -125,23 +156,41 @@ Actual Human     658      342
 Actual AI        382      618
 ```
 
+</details>
+
+## Running the Project
+### N-gram Analysis
+To run the n-gram analysis:
+```bash
+uv sync
+source .venv/bin/activate
+python src/ngram.py --dataset_path [DATASETPATH]
+```
+
+### Generating Data
+1. Create a config file in the `config` directory for your chosen model.
+2. Add a line in the `Makefile`:
+   ```bash
+   python3 ./src/dataset/generate.py ./config/[MODEL_NAME_CONFIG].yaml
+   ```
+3. Run the following commands:
+   ```bash
+   make generate_[MODEL_NAME]
+   make generate_[MODEL_name]
+   ```
+
 ## Embedding-based Dimensionality Analysis
-This method is under development, and we have not yet tested it. Future work will focus on:
+This method is under development. Future work will focus on:
 
 - Analyzing embeddings from different models using PCA.
 - Comparing the number of dimensions required for AI vs. human text to explain 95% variance.
 - Evaluating this method on synthetic datasets.
 
 ## Future Directions
-- Refine the n-gram analysis with additional features.
-- Complete and validate the embedding-based dimensionality method.
-- Expand datasets to include more diverse models and text styles.
-
-## Contribution
-Feel free to explore the datasets and results. Contributions are welcome! If you have any suggestions or would like to collaborate, please contact us.
+- [x] Refine the n-gram analysis.
+- [ ] Complete and validate the embedding-based dimensionality method.
+- [ ] Expand datasets to include more diverse models and text styles.
 
 ---
-**Repository Link:** [GitHub Repository (placeholder)]
 **Hugging Face Datasets Collection:** [Link](https://huggingface.co/collections/zcamz/ai-vs-human-6754d445b3826df8fd547c0e)
-
 
