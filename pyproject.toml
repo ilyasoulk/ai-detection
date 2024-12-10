@@ -1,0 +1,17 @@
+[project]
+name = "ai-detection"
+version = "0.1.0"
+description = "Using intrinsic dimension to detect AI generated text"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "datasets>=3.2.0",
+    "nltk>=3.9.1",
+    "numpy>=1.26.4",
+    "pyyaml==6.0.2",
+    "ruff>=0.8.2",
+    "scikit-learn>=1.6.0",
+    "torch>=2.5.1",
+    "transformers>=4.47.0",
+    "vllm==0.6.4.post1",
+]
