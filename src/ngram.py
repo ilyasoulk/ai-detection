@@ -135,7 +135,7 @@ def transform_paired_dataset(dataset):
 if __name__ == "__main__":
     import nltk
 
-    nltk.download("punkt")
+    nltk.download("punkt_tab")
 
     parser = argparse.ArgumentParser(description="Load config for dataset processing")
     parser.add_argument(
