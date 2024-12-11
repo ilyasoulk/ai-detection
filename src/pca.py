@@ -1,74 +1,207 @@
-from datasets import load_dataset
-from tqdm import tqdm
-import numpy as np
 from sklearn.decomposition import PCA
-import nltk
-from embed import (
-    word2vec_emb,
-    token_transformer_emb,
-    sentence_transformer_emb
-)
+import torch
+import argparse
+import numpy as np
+from tqdm import tqdm
+import pandas as pd
+from utils.utils import split_dataset_random, transform_paired_dataset
+from sklearn.metrics import classification_report, confusion_matrix
+from datasets import load_dataset
+from transformers import AutoTokenizer, AutoModel
 
 
-def intrinsic_dimension(texts, embedding_model, embedding_type, threshold=0.95, elements=100):
-    # Compute embeddings based on the specified embedding type
-    texts = texts[:elements]
-    if embedding_type == "word2vec":
-        embeddings = word2vec_emb(texts, embedding_model)
-        n_components = 25
-    elif embedding_type == "token_transformer":
-        embeddings = token_transformer_emb(texts, embedding_model)
-        n_components = 200
-    elif embedding_type == "sentence_transformer":
-        embeddings = sentence_transformer_emb(texts, embedding_model)
-        n_components = 768
-    else:
-        raise ValueError("Invalid embedding type. Choose 'word2vec' or 'sentence_transformer'.")
+class PCAAnalyzer:
+    def __init__(self, embedding_model, min_tokens=150, thresholds=[0.8, 0.9, 0.95]):
+        self.embedding_model = embedding_model
+        self.thresholds = thresholds
+        self.stats = None
+        self.features = None
+        self.tokenizer = AutoTokenizer.from_pretrained(embedding_model)
+        if self.tokenizer.pad_token_id is None:
+            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        self.embedder = AutoModel.from_pretrained(embedding_model)
+        self.min_tokens = min_tokens
 
-    threshold = 0.95
-    dimensions = []
-    for samples in tqdm(embeddings):
-        samples = np.array(samples)
-        prev = len(dimensions)
-        pca = PCA(n_components=n_components)
-        pca.fit(samples)
+    def find_min_tokens(self, texts):
+        """Compute the minimum number of tokens across all texts"""
+        token_lengths = []
+        for text in tqdm(texts, desc="Computing min tokens"):
+            tokens = self.tokenizer.encode(text)
+            token_lengths.append(len(tokens))
+        self.min_tokens = min(token_lengths)
+        print(f"Minimum number of tokens found: {self.min_tokens}")
+        return self.min_tokens
+
+    def embed(self, texts):
+        tokens = self.tokenizer(
+            texts,
+            return_tensors="pt",
+            truncation=True,
+            padding=True,
+        )
+
+        with torch.no_grad():
+            outputs = self.embedder(**tokens)
+
+        embeddings = outputs.last_hidden_state
+
+        return embeddings
+
+    def compute_intrinsic_dimensions(self, text):
+        # Check if text has enough tokens
+        tokens = self.tokenizer.encode(text)
+        if len(tokens) < self.min_tokens:
+            raise ValueError(f"Text has fewer than {self.min_tokens} tokens")
+
+        # Get embeddings and truncate to min_tokens
+        embeddings = self.embed([text])[0]
+        embeddings = np.array(embeddings[: self.min_tokens])
+
+        # Compute PCA with fixed n_components
+        pca = PCA(n_components=self.min_tokens)
+        pca.fit(embeddings)
         explained_variance = pca.explained_variance_ratio_
-        cumul_var = 0
-        dim = 0
-        for variance in explained_variance:
-            cumul_var += variance
-            dim += 1
 
-            if cumul_var > threshold:
-                dimensions.append(dim)
-                break
+        results = {}
+        for threshold in self.thresholds:
+            cumul_var = 0
+            dim = 0
+            for variance in explained_variance:
+                cumul_var += variance
+                dim += 1
+                if cumul_var > threshold:
+                    break
 
-        if prev == len(dimensions):
-            dimensions.append(n_components)
+            results[f"dim_t{threshold}"] = dim
+            results[f"var_t{threshold}"] = cumul_var
 
+        return results
 
-    dimensions = np.array(dimensions)
-    return np.mean(dimensions)
+    def fit(self, X, y):
+        """
+        X: array-like of shape (n_samples,) containing text samples
+        y: array-like of shape (n_samples,) containing labels (0 for human, 1 for AI)
+        """
+        all_results = []
+        skipped = 0
+
+        for text, label in tqdm(zip(X, y), total=len(X), desc="Processing texts"):
+            try:
+                results = self.compute_intrinsic_dimensions(text)
+                results["type"] = "ai" if label == 1 else "human"
+                results["text_length"] = len(text)
+                all_results.append(results)
+            except ValueError as e:
+                skipped += 1
+                continue
+            except Exception as e:
+                print(f"Error processing text: {e}")
+                skipped += 1
+                continue
+
+        print(f"Skipped {skipped} texts with fewer than {self.min_tokens} tokens")
+        if not all_results:
+            raise ValueError("No valid texts found with sufficient tokens")
+
+        df = pd.DataFrame(all_results)
+
+        # Compute statistics for prediction
+        stats = {}
+        features = [f"dim_t{t}" for t in self.thresholds] + [
+            f"var_t{t}" for t in self.thresholds
+        ]
+
+        for type_ in ["ai", "human"]:
+            stats[type_] = {
+                "mean": df[df["type"] == type_][features].mean(),
+                "std": df[df["type"] == type_][features].std(),
+            }
+
+        self.stats = stats
+        self.features = features
+
+        return self
+
+    def predict(self, X):
+        """
+        X: array-like of shape (n_samples,) containing text samples
+        Returns: array of predictions (0 for human, 1 for AI)
+        """
+        if self.stats is None:
+            raise ValueError("Must call fit before predict")
+
+        predictions = []
+        for text in tqdm(X):
+            predictions.append(self.predict_text(text))
+
+        return np.array(predictions)
+
+    def predict_text(self, text):
+        if self.stats is None:
+            raise ValueError("Must compute training stats before prediction")
+
+        results = self.compute_intrinsic_dimensions(text)
+        results["text_length"] = len(text)
+
+        scores = {"ai": 0, "human": 0}
+        for type_ in ["ai", "human"]:
+            if self.features is not None:
+                for feature in self.features:
+                    if feature in results:
+                        z_score = (
+                            abs(results[feature] - self.stats[type_]["mean"][feature])
+                            / self.stats[type_]["std"][feature]
+                        )
+                        scores[type_] += z_score
+
+        return 1 if scores["ai"] < scores["human"] else 0
 
 
 if __name__ == "__main__":
-    nltk.download("punkt")
-    dataset_path = "ilyasoulk/ai-vs-human"
-    word_transformer_path = "bert-base-uncased"
+    parser = argparse.ArgumentParser(description="Load config for dataset processing")
+    parser.add_argument(
+        "--dataset_path",
+        type=str,
+        required=True,
+        help="Path to the dataset or huggingface id",
+    )
+    parser.add_argument(
+        "--embedding_model",
+        type=str,
+        required=True,
+        help="Name or path of the embedding model",
+    )
 
-    ds = load_dataset(dataset_path, split="train")
-    ai_ds = ds["ai"]
-    hm_ds = ds["human"]
+    args = parser.parse_args()
 
-    # intrinsic_dimension(human_dataset_path, sentence_transformers_path, "sentence_transformer", elements=100)
-    avg_dim_ai_bert = intrinsic_dimension(ai_ds, word_transformer_path, "token_transformer")
-    avg_dim_human_bert = intrinsic_dimension(hm_ds, word_transformer_path, "token_transformer")
+    # Load dataset
+    dataset = load_dataset(args.dataset_path, split="train")
 
+    # Split into train and validation splits
+    dataset = split_dataset_random(dataset)
 
-    print("Results")
-    print(f"Average dimension using bert on synthetic dataset {dataset_path.split('/')[-1]} : {avg_dim_ai_bert}")
-    print(f"Average dimension using bert on human dataset {dataset_path.split('/')[-1]}: {avg_dim_human_bert}")
+    # Transform into text, class dataset
+    train_set = transform_paired_dataset(dataset["train"])
+    val_set = transform_paired_dataset(dataset["validation"])
 
-# Results
-# Average dimension using bert on synthetic dataset ai-vs-human : 153.73
-# Average dimension using bert on human dataset ai-vs-human: 196.17
+    # Initialize analyzer
+    analyzer = PCAAnalyzer(args.embedding_model)
+
+    # Fit the analyzer
+    analyzer.fit(train_set["text"], train_set["class"])
+
+    # Make predictions
+    predictions = analyzer.predict(val_set["text"])
+    gt = val_set["class"]
+
+    # Print classification report
+    print("\nClassification Report:")
+    print(classification_report(gt, predictions))
+
+    # Print confusion matrix
+    cm = confusion_matrix(gt, predictions)
+    print("\nConfusion Matrix:")
+    print("                 Predicted")
+    print("                 Human   AI")
+    print(f"Actual Human  {cm[0][0]:6d} {cm[0][1]:8d}")
+    print(f"Actual AI    {cm[1][0]:6d} {cm[1][1]:8d}")
