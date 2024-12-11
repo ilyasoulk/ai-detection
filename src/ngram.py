@@ -10,9 +10,10 @@ import argparse
 from sklearn.metrics import classification_report, confusion_matrix
 import pandas as pd
 from tqdm import tqdm
+from utils.utils import split_dataset_random, transform_paired_dataset
 
 
-class TextAnalyzer:
+class NgramAnalyzer:
     def __init__(self, n_range=[2, 3, 4], threshold=1e-10):
         self.n_range = n_range
         self.threshold = threshold
@@ -21,9 +22,12 @@ class TextAnalyzer:
 
     def create_ngram_matrix(self, text, n):
         corpus = sent_tokenize(text)
-        vectorizer = CountVectorizer(ngram_range=(n, n))
-        ngram_matrix = vectorizer.fit_transform(corpus)
-        return ngram_matrix.toarray()
+        try:
+            vectorizer = CountVectorizer(ngram_range=(n, n))
+            ngram_matrix = vectorizer.fit_transform(corpus)
+            return ngram_matrix.toarray()
+        except Exception as e:
+            raise ValueError(f"Ngram failed {e}")
 
     def rank_with_svd(self, s):
         return np.sum(s > self.threshold * s[0])
@@ -31,12 +35,15 @@ class TextAnalyzer:
     def analyze_text(self, text):
         results = {}
         for n in self.n_range:
-            ngram_matrix = self.create_ngram_matrix(text, n)
-            s = np.linalg.svd(ngram_matrix, compute_uv=False)
+            try:
+                ngram_matrix = self.create_ngram_matrix(text, n)
+                s = np.linalg.svd(ngram_matrix, compute_uv=False)
 
-            results[f"rank_n{n}"] = self.rank_with_svd(s)
-            results[f"largest_sv_n{n}"] = s[0]
-            results[f"sv_ratio_n{n}"] = s[0] / s[-1] if len(s) > 1 else 0
+                results[f"rank_n{n}"] = self.rank_with_svd(s)
+                results[f"largest_sv_n{n}"] = s[0]
+                results[f"sv_ratio_n{n}"] = s[0] / s[-1] if len(s) > 1 else 0
+            finally:
+                continue
 
         return results
 
@@ -97,39 +104,14 @@ class TextAnalyzer:
         for type_ in ["ai", "human"]:
             if self.features is not None:
                 for feature in self.features:
-                    z_score = (
-                        abs(results[feature] - self.stats[type_]["mean"][feature])
-                        / self.stats[type_]["std"][feature]
-                    )
-                    scores[type_] += z_score
+                    if feature in results:
+                        z_score = (
+                            abs(results[feature] - self.stats[type_]["mean"][feature])
+                            / self.stats[type_]["std"][feature]
+                        )
+                        scores[type_] += z_score
 
         return 1 if scores["ai"] < scores["human"] else 0
-
-
-def split_dataset_random(dataset, seed=42):
-    split = dataset.train_test_split(test_size=0.2, seed=seed)
-    return {"train": split["train"], "validation": split["test"]}
-
-
-def transform_paired_dataset(dataset):
-    """
-    Transform a dataset with 'ai' and 'human' columns into a format with 'text' and 'class' columns
-    Returns a dataset with twice as many rows, where:
-    - 'text' contains all texts (both AI and human)
-    - 'class' contains 1 for AI-generated text and 0 for human-written text
-    """
-    texts = []
-    labels = []
-
-    # Add AI texts with label 1
-    texts.extend(dataset["ai"])
-    labels.extend([1] * len(dataset["ai"]))
-
-    # Add human texts with label 0
-    texts.extend(dataset["human"])
-    labels.extend([0] * len(dataset["human"]))
-
-    return {"text": texts, "class": labels}
 
 
 if __name__ == "__main__":
@@ -157,7 +139,7 @@ if __name__ == "__main__":
     val_set = transform_paired_dataset(dataset["validation"])
 
     # Initialize analyzer
-    analyzer = TextAnalyzer()
+    analyzer = NgramAnalyzer()
 
     # Fit the analyzer
     analyzer.fit(train_set["text"], train_set["class"])
