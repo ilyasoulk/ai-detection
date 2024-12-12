@@ -25,6 +25,29 @@ To create synthetic datasets for training and evaluation, we used the CNN/Daily 
 3. **Labeling:** Retaining and labeling these completions as either human (0) or AI (1).
 
 Different models were used for data generation, and the datasets are named accordingly. You can explore the datasets [here on Hugging Face](https://huggingface.co/collections/zcamz/ai-vs-human-6754d445b3826df8fd547c0e).
+## Project Structure
+
+.
+├── config/                 # Model configuration files for text generation
+├── prompts/               # System prompts used for text generation
+└── src/
+    ├── pca.py            # PCA-based intrinsic dimension analysis and evaluation
+    ├── ngram.py          # N-gram rank analysis and evaluation
+    ├── pretrained.py     # RoBERTa-based classification
+    └── dataset/
+        ├── generate.py   # Dataset generation pipeline
+        └── push_hf.py    # Utility to push datasets to Hugging Face
+
+Each component serves a specific purpose:
+- `config/`: Contains YAML configuration files for different models used in text generation
+- `prompts/`: Stores system prompts that guide the AI models during text generation
+- `src/`: Main source code directory
+  - `pca.py`: Implements PCA-based intrinsic dimensionality analysis
+  - `ngram.py`: Implements n-gram rank analysis method
+  - `pretrained.py`: Handles RoBERTa model fine-tuning and evaluation
+  - `dataset/`: Dataset management
+    - `generate.py`: Orchestrates the dataset generation pipeline
+    - `push_hf.py`: Handles dataset upload to Hugging Face Hub
 
 ## Results Summary
 
