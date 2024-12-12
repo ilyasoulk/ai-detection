@@ -27,7 +27,7 @@ To create synthetic datasets for training and evaluation, we used the CNN/Daily 
 Different models were used for data generation, and the datasets are named accordingly. You can explore the datasets [here on Hugging Face](https://huggingface.co/collections/zcamz/ai-vs-human-6754d445b3826df8fd547c0e).
 ## Project Structure
 
-.
+```plaintext
 ├── config/                 # Model configuration files for text generation
 ├── prompts/               # System prompts used for text generation
 └── src/
@@ -37,6 +37,7 @@ Different models were used for data generation, and the datasets are named accor
     └── dataset/
         ├── generate.py   # Dataset generation pipeline
         └── push_hf.py    # Utility to push datasets to Hugging Face
+```
 
 Each component serves a specific purpose:
 - `config/`: Contains YAML configuration files for different models used in text generation
