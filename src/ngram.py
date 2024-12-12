@@ -7,10 +7,9 @@ import numpy as np
 from datasets import load_dataset
 import argparse
 
-from sklearn.metrics import classification_report, confusion_matrix
 import pandas as pd
 from tqdm import tqdm
-from utils.utils import split_dataset_random, transform_paired_dataset
+from utils.utils import split_dataset_random, transform_paired_dataset, evaluate
 
 
 class NgramAnalyzer:
@@ -148,14 +147,5 @@ if __name__ == "__main__":
     predictions = analyzer.predict(val_set["text"])
     gt = val_set["class"]
 
-    # Print classification report
-    print("\nClassification Report:")
-    print(classification_report(gt, predictions))
-
-    # Print confusion matrix
-    cm = confusion_matrix(gt, predictions)
-    print("\nConfusion Matrix:")
-    print("                 Predicted")
-    print("                 Human   AI")
-    print(f"Actual Human  {cm[0][0]:6d} {cm[0][1]:8d}")
-    print(f"Actual AI    {cm[1][0]:6d} {cm[1][1]:8d}")
+    # Evaluate the model
+    evaluate(gt, predictions)
