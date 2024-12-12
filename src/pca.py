@@ -156,6 +156,50 @@ class PCAAnalyzer:
 
         return 1 if scores["ai"] < scores["human"] else 0
 
+    def evaluate(self, X, y):
+        """
+        Evaluate the model on test data, skipping samples with insufficient tokens
+
+        X: array-like of shape (n_samples,) containing text samples
+        y: array-like of shape (n_samples,) containing ground truth labels
+        Returns: Dictionary containing evaluation metrics
+        """
+        predictions = []
+        ground_truth = []
+        skipped = 0
+
+        for text, label in tqdm(zip(X, y), total=len(X), desc="Evaluating texts"):
+            try:
+                pred = self.predict_text(text)
+                predictions.append(pred)
+                ground_truth.append(label)
+            except ValueError as e:
+                skipped += 1
+                continue
+            except Exception as e:
+                print(f"Error processing text: {e}")
+                skipped += 1
+                continue
+
+        print(f"Skipped {skipped} texts with fewer than {self.min_tokens} tokens")
+
+        if not predictions:
+            raise ValueError("No valid texts found with sufficient tokens")
+
+        # Convert to numpy arrays for sklearn metrics
+        predictions = np.array(predictions)
+        ground_truth = np.array(ground_truth)
+
+        # Calculate metrics
+        report = classification_report(ground_truth, predictions, output_dict=True)
+        cm = confusion_matrix(ground_truth, predictions)
+
+        return {
+            "classification_report": report,
+            "confusion_matrix": cm,
+            "skipped_samples": skipped,
+        }
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Load config for dataset processing")
@@ -187,21 +231,20 @@ if __name__ == "__main__":
     # Initialize analyzer
     analyzer = PCAAnalyzer(args.embedding_model)
 
-    # Fit the analyzer
+    # Fit the "model"
     analyzer.fit(train_set["text"], train_set["class"])
 
-    # Make predictions
-    predictions = analyzer.predict(val_set["text"])
-    gt = val_set["class"]
-
-    # Print classification report
+    # Evaluation
+    results = analyzer.evaluate(val_set["text"], val_set["class"])
     print("\nClassification Report:")
-    print(classification_report(gt, predictions))
-
-    # Print confusion matrix
-    cm = confusion_matrix(gt, predictions)
+    print(results["classification_report"])
     print("\nConfusion Matrix:")
     print("                 Predicted")
     print("                 Human   AI")
-    print(f"Actual Human  {cm[0][0]:6d} {cm[0][1]:8d}")
-    print(f"Actual AI    {cm[1][0]:6d} {cm[1][1]:8d}")
+    print(
+        f"Actual Human  {results['confusion_matrix'][0][0]:6d} {results['confusion_matrix'][0][1]:8d}"
+    )
+    print(
+        f"Actual AI    {results['confusion_matrix'][1][0]:6d} {results['confusion_matrix'][1][1]:8d}"
+    )
+    print(f"\nSkipped {results['skipped_samples']} samples due to insufficient tokens")
