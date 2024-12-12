@@ -125,17 +125,25 @@ if __name__ == "__main__":
         required=True,
         help="Path to the dataset or huggingface id",
     )
+    parser.add_argument("--testset_path", type=str, help="Dataset to run the test on")
 
     args = parser.parse_args()
     # Load dataset
     dataset = load_dataset(args.dataset_path, split="train")
 
     # Split into train and validation splits
-    dataset = split_dataset_random(dataset)
+    if args.testset_path is None:
+        dataset = split_dataset_random(dataset)
 
-    # Transform into text, class dataset
-    train_set = transform_paired_dataset(dataset["train"])
-    val_set = transform_paired_dataset(dataset["validation"])
+        # Transform into text, class dataset
+        train_set = transform_paired_dataset(dataset["train"])
+        test_set = transform_paired_dataset(dataset["validation"])
+
+    else:
+        train_set = transform_paired_dataset(dataset)
+
+        test_set = load_dataset(args.testset_path, split="train")
+        test_set = transform_paired_dataset(test_set)
 
     # Initialize analyzer
     analyzer = NgramAnalyzer()
@@ -144,8 +152,8 @@ if __name__ == "__main__":
     analyzer.fit(train_set["text"], train_set["class"])
 
     # Make predictions
-    predictions = analyzer.predict(val_set["text"])
-    gt = val_set["class"]
+    predictions = analyzer.predict(test_set["text"])
+    gt = test_set["class"]
 
     # Evaluate the model
     evaluate(gt, predictions)
