@@ -260,12 +260,42 @@ python src/ngram.py --dataset_path [DATASETPATH]
    make generate_[MODEL_name]
    ```
 
-## Embedding-based Dimensionality Analysis
-This method is under development. Future work will focus on:
+### Embedding-based Intrinsic Dimension Analysis
+#### 1. Configure Target Datasets
+Edit the `Makefile` to specify the datasets to analyze. Example configuration:
+```bash
+DATASETS = \
+    zcamz/ai-vs-human-google-gemma-2-2b-it \
+    zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-360M
+```
 
-- Analyzing embeddings from different models using PCA.
-- Comparing the number of dimensions required for AI vs. human text to explain 95% variance.
-- Evaluating this method on synthetic datasets.
+#### 2. Adjust Subset Size and Embedding Model
+Define the subset size of the target dataset and the embedding model in the `Makefile`:
+```bash
+SUBSET_SIZE=512
+EMBEDDING_MODEL=google-bert/bert-base-uncased
+```
+- `SUBSET_SIZE`: Limits the number of samples for the analysis.
+- `EMBEDDING_MODEL`: Specifies the embedding model to use.
+
+#### 3. Execute the Analysis Pipeline
+Run both PCA and PHD methods in a single step:
+```bash
+make compute_all_phd_pca
+```
+#### 4. Individual Analysis Methods
+To execute specific analyses:
+- **Run PCA only**:
+  ```bash
+  make compute_all_pca
+  ```
+- **Run PHD only**:
+  ```bash
+  make compute_all_phd
+  ```
+#### 5. Results and Logs
+All logs, including confusion matrices and classifier metrics, will be saved in the `logs` directory. 
+
 
 ## Future Directions
 - [x] Refine the n-gram analysis.
