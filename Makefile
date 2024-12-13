@@ -22,13 +22,13 @@ generate_Llama-3.1-8B_dataset:
 push_dataset_to_hf:
 	python3 ./src/dataset/push_hf.py
 
+
 DATASETS=\
     zcamz/ai-vs-human-google-gemma-2-2b-it \
-    zcamz/ai-vs-human-google-llama-3.2-1b \
-    zcamz/ai-vs-human-google-phi-3.5 \
-    zcamz/ai-vs-human-google-qwen2.5-1.5b \
-    zcamz/ai-vs-human-google-smollm2-1.7b \
-    zcamz/ai-vs-human-google-smollm-360m \
+    zcamz/ai-vs-human-meta-llama-Llama-3.2-1B-Instruct \
+    zcamz/ai-vs-human-Qwen-Qwen2.5-1.5B-Instruct\
+    zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-1.7B-Instruct\
+    zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-360M-Instruct \
     ilyasoulk/ai-vs-human-meta-llama-Llama-3.1-8B-Instruct-CNN
 
 SUBSET_SIZE=512
