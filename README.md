@@ -93,18 +93,40 @@ However, the results are pretty low showing that our method has a hard time afte
 
 ### PCA-based Analysis
 The PCA analysis was performed with the following parameters:
-- Minimum tokens per sample: 150
+- Maximum number of tokens: 512
 - Number of components: 150
 - Variance threshold: 95%
 
 Results across datasets:
-| Dataset | Accuracy | Human Precision | AI Precision |
-|---------|----------|-----------------|--------------|
-| Qwen-2.5-1.5B | 62.4% | 63.4% | 61.4% |
-| SmolLM2-360M | 64.6% | 81.3% | 46.8% |
-| SmolLM2-1.7B | 67.4% | 69.1% | 65.6% |
-| Gemma-2-2b | 65.3% | 66.3% | 64.5% |
-| Llama-3.2-1B | 58.1% | 60.0% | 56.3% |
+| Dataset        | Accuracy  | Human Precision | AI Precision |
+|----------------|-----------|-----------------|--------------|
+| Qwen-2.5-1.5B  | 0.7108    | 0.6944          | 0.7292       |
+| SmolLM2-360M   | 0.7753    | 0.7160          | 0.8247       |
+| SmolLM2-1.7B   | 0.7961    | 0.8280          | 0.7699       |
+| Gemma-2-2b     | 0.6602    | 0.6410          | 0.6854       |
+| Llama-3.2-1B   | 0.6049    | 0.5913          | 0.6222       |
+| Llama-3.1-8B   | 0.5922    | 0.5569          | 0.7436       |
+
+### PHD-based Analysis
+The PHD analysis was performed with the following parameters:
+- Maximum number of tokens: 512
+- alpha=1.0
+- metric="euclidean
+- n_reruns=3
+- n_points=7
+- n_points_min=3
+- MIN_SUBSAMPLE = 40
+- INTERMEDIATE_POINTS = 7
+
+Results across datasets:
+| Dataset          | Accuracy  | Human Precision | AI Precision |
+|------------------|-----------|-----------------|--------------|
+| Qwen-2.5-1.5B    | 0.6814    | 0.6731          | 0.6900       |
+| SmolLM2-360M     | 0.7360    | 0.6750          | 0.7857       |
+| SmolLM2-1.7B     | 0.6990    | 0.7204          | 0.6814       |
+| Gemma-2-2b       | 0.5971    | 0.5962          | 0.5980       |
+| Llama-3.2-1B     | 0.6195    | 0.6176          | 0.6214       |
+| Llama-3.1-8B     | 0.6602    | 0.6571          | 0.6634       |
 
 ### RoBERTa Fine-tuned Model
 Results on SmolLM2-1.7B dataset:
@@ -118,6 +140,7 @@ Results on SmolLM2-1.7B dataset:
 - PCA-based analysis shows consistent performance across different models, with accuracies ranging from 58% to 67%.
 - RoBERTa fine-tuning achieves strong results with particularly high precision for AI text detection.
 - Zero-shot transfer to new domains remains challenging but shows promising results.
+
 ### Detailed Results
 <details>
 <summary>Click to expand results for `zcamz/ai-vs-human-google-gemma-2-2b-it`</summary>

@@ -19,9 +19,8 @@ class IntrinsicDimAnalyzer:
         if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.embedder = AutoModel.from_pretrained(embedding_model, device_map="cuda")
-        self.min_characters = 450
-        self.max_characters = 10000
         self.batch_size = 10
+        self.min_tokens = 512
 
     def embed(self, texts):
         tokens = self.tokenizer(
@@ -29,6 +28,7 @@ class IntrinsicDimAnalyzer:
             return_tensors="pt",
             truncation=True,
             padding=True,
+            max_length=512,
         )
         tokens = {k: v.to(self.embedder.device) for k, v in tokens.items()}
 
@@ -47,13 +47,18 @@ class IntrinsicDimAnalyzer:
         y: array-like of shape (n_samples,) containing labels (0 for human, 1 for AI)
         """
         all_results = []
+        X_filered = []
+        tokens = self.tokenizer(
+            X,
+            max_length=self.min_tokens,
+        )
 
-        X = [
-            text
-            for text in X
-            if len(text) >= self.min_characters and len(text) <= self.max_characters
-        ]
+        for text, tkn in zip(X, tokens["input_ids"]):
+            if len(tkn) < self.min_tokens:
+                continue
+            X_filered.append(text)
 
+        X = X_filered
         batch_size = self.batch_size
         for start in tqdm(range(0, len(X), batch_size), desc="Fit texts"):
             end = start + batch_size if start + batch_size < len(X) else len(X)
@@ -124,12 +129,18 @@ class IntrinsicDimAnalyzer:
         predictions = []
         ground_truth = []
         skipped = 0
+        X_filered = []
+        tokens = self.tokenizer(
+            X,
+            max_length=self.min_tokens,
+        )
 
-        X = [
-            text
-            for text in X
-            if len(text) >= self.min_characters and len(text) <= self.max_characters
-        ]
+        for text, tkn in zip(X, tokens["input_ids"]):
+            if len(tkn) < self.min_tokens:
+                continue
+            X_filered.append(text)
+
+        X = X_filered  
 
         batch_size = self.batch_size
         for start in tqdm(range(0, len(X), batch_size), desc="Evaluate texts"):
@@ -199,7 +210,6 @@ if __name__ == "__main__":
         "pca": PCAAnalyzer,
         "phd": PHDAnalyzer,
     }
-
 
     # Load dataset
     dataset = load_dataset(args.dataset_path, split="train")
