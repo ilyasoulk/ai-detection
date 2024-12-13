@@ -100,12 +100,19 @@ The PCA analysis was performed with the following parameters:
 
 | Dataset          | Accuracy  | Human Precision | AI Precision  |
 |------------------|-----------|-----------------|---------------|
-| Qwen-2.5-1.5B    | 0.7228    | 0.7009          | 0.7474        |
-| SmolLM2-360M     | 0.6859    | 0.5278          | **0.8214**    |
-| SmolLM2-1.7B     | **0.8150**| **0.8333**      | 0.8000        |
-| Gemma-2-2b       | 0.6733    | 0.6410          | 0.7176        |
-| Llama-3.2-1B     | 0.6020    | 0.5790          | 0.6322        |
-| Llama-3.1-8B     | 0.5931    | 0.5556          | 0.7381        |
+| Qwen-2.5-1.5B    | 0.7129    | 0.7009         | 0.7263        |
+| SmolLM2-360M     | **0.8910**| **0.9565**     | **0.7969**    |
+| SmolLM2-1.7B     | 0.8000    | 0.8280         | 0.7757        |
+| Gemma-2-2b       | 0.6634    | 0.6410         | 0.6941        |
+| Llama-3.2-1B     | 0.5970    | 0.5877         | 0.6092        |
+| Llama-3.1-8B     | 0.5931    | 0.5556         | 0.7381        |
+
+The highest values in each column are marked in bold:
+- Accuracy: SmolLM2-360M with 0.8910
+- Human Precision: SmolLM2-360M with 0.9565
+- AI Precision: SmolLM2-360M with 0.7969
+
+Would you like any additional analysis of these metrics?
 ### PHD-based Analysis
 The PHD analysis was performed with the following parameters:
 - Number of tokens: 128
@@ -117,14 +124,20 @@ The PHD analysis was performed with the following parameters:
 - MIN_SUBSAMPLE = 40
 - INTERMEDIATE_POINTS = 7
 
-| Model               | Accuracy | Human Precision | AI Precision |
-|---------------------|------------------|-----------------|--------------|
-| **Qwen-2.5-1.5B**   | 0.7228           | 0.7048          | **0.7423**   |
-| **SmolLM2-360M**    | 0.6603           | 0.5000          | 0.7907       |
-| **SmolLM2-1.7B**    | 0.6950           | 0.6957          | 0.6944       |
-| **Gemma-2-2B**      | 0.6089           | 0.5980          | 0.6200       |
-| **Llama-3.2-1B**    | 0.6567           | 0.6436          | 0.6700       |
-| **Llama-3.1-8B**    | **0.7255**       | **0.7368**      | 0.7156       |
+
+| Dataset          | Accuracy  | Human Precision | AI Precision  |
+|------------------|-----------|-----------------|---------------|
+| Qwen-2.5-1.5B    | -         | -              | -             |
+| SmolLM2-360M     | 0.6923    | **0.7912**     | 0.5538        |
+| SmolLM2-1.7B     | **0.7350**| 0.7667         | **0.7091**    |
+| Gemma-2-2b       | 0.5990    | 0.5980         | 0.6000        |
+| Llama-3.2-1B     | 0.6070    | 0.6058         | 0.6082        |
+| Llama-3.1-8B     | 0.6765    | 0.6768         | 0.6762        |
+
+The highest values in each column are marked in bold:
+- Accuracy: SmolLM2-1.7B with 0.7350
+- Human Precision: SmolLM2-360M with 0.7912
+- AI Precision: SmolLM2-1.7B with 0.7091
 
 ### Highlights:
 - **Llama-3.1-8B** has the highest overall accuracy (**72.55%**) and the best human precision (**73.68%**).  

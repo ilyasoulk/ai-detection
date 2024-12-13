@@ -24,12 +24,11 @@ push_dataset_to_hf:
 
 
 DATASETS=\
-    zcamz/ai-vs-human-google-gemma-2-2b-it \
-    zcamz/ai-vs-human-meta-llama-Llama-3.2-1B-Instruct \
-    zcamz/ai-vs-human-Qwen-Qwen2.5-1.5B-Instruct\
+    ilyasoulk/ai-vs-human-meta-llama-Llama-3.1-8B-Instruct-CNN\
     zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-1.7B-Instruct\
-    zcamz/ai-vs-human-HuggingFaceTB-SmolLM2-360M-Instruct \
-    ilyasoulk/ai-vs-human-meta-llama-Llama-3.1-8B-Instruct-CNN
+    zcamz/ai-vs-human-meta-llama-Llama-3.2-1B-Instruct \
+    zcamz/ai-vs-human-google-gemma-2-2b-it \
+    zcamz/ai-vs-human-Qwen-Qwen2.5-1.5B-Instruct
 
 SUBSET_SIZE=512
 

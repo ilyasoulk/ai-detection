@@ -48,17 +48,20 @@ class IntrinsicDimAnalyzer:
         """
         all_results = []
         X_filered = []
+        Y_filtered = []
         tokens = self.tokenizer(
             X,
             max_length=self.min_tokens,
         )
 
-        for text, tkn in zip(X, tokens["input_ids"]):
+        for i, (text, tkn) in enumerate(zip(X, tokens["input_ids"])):
             if len(tkn) < self.min_tokens:
                 continue
             X_filered.append(text)
+            Y_filtered.append(y[i])
 
         X = X_filered
+        y = Y_filtered
         batch_size = self.batch_size
         for start in tqdm(range(0, len(X), batch_size), desc="Fit texts"):
             end = start + batch_size if start + batch_size < len(X) else len(X)
@@ -130,17 +133,20 @@ class IntrinsicDimAnalyzer:
         ground_truth = []
         skipped = 0
         X_filered = []
+        Y_filtered = []
         tokens = self.tokenizer(
             X,
             max_length=self.min_tokens,
         )
 
-        for text, tkn in zip(X, tokens["input_ids"]):
+        for i, (text, tkn) in enumerate(zip(X, tokens["input_ids"])):
             if len(tkn) < self.min_tokens:
                 continue
             X_filered.append(text)
+            Y_filtered.append(y[i])
 
         X = X_filered  
+        y = Y_filtered
 
         batch_size = self.batch_size
         for start in tqdm(range(0, len(X), batch_size), desc="Evaluate texts"):
