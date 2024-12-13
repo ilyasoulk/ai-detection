@@ -138,14 +138,6 @@ The highest values in each column are marked in bold:
 - Human Precision: SmolLM2-360M with 0.7912
 - AI Precision: SmolLM2-1.7B with 0.7091
 
-### Highlights:
-- **Llama-3.1-8B** has the highest overall accuracy (**72.55%**) and the best human precision (**73.68%**).  
-- **Qwen-2.5-1.5B** has the highest AI precision (**74.23%**).  
-
-Let me know if you'd like further refinements!
-
-Let me know if you need further details or specific analysis!
-
 ### RoBERTa Fine-tuned Model
 Results on SmolLM2-1.7B dataset:
 - Accuracy: 76%
