@@ -33,13 +33,15 @@ DATASETS=\
 
 SUBSET_SIZE=512
 
+EMBEDDING_MODEL=google-bert/bert-base-uncased
+
 compute_all_phd:
 	@mkdir -p ./logs/phd/zcamz
 	@mkdir -p ./logs/phd/ilyasoulk
 	@for dataset in $(DATASETS); do \
 		python ./src/intrinsic_dim.py \
 			--dataset_path=$$dataset \
-			--embedding_model=google-bert/bert-base-uncased \
+			--embedding_model=$(EMBEDDING_MODEL) \
 			--intrinsic_dim_method="phd" > ./logs/phd/$$dataset.log 2>&1 \
 			--subset_size=$(SUBSET_SIZE); \
 	done
@@ -50,7 +52,7 @@ compute_all_pca:
 	@for dataset in $(DATASETS); do \
 		python ./src/intrinsic_dim.py \
 			--dataset_path=$$dataset \
-			--embedding_model=google-bert/bert-base-uncased \
+			--embedding_model=$(EMBEDDING_MODEL) \
 			--intrinsic_dim_method="pca" > ./logs/pca/$$dataset.log 2>&1 \
 			--subset_size=$(SUBSET_SIZE); \
 	done
