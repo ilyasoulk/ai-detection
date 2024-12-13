@@ -16,7 +16,8 @@ generate_Llama-3.2-1B_dataset:
 generate_gemma-2-2b-it_dataset:
 	python3 ./src/dataset/generate.py --config ./configs/gemma-2-2b-it.yaml
 
-generate_all: generate_Llama-3.2-1B_dataset generate_Qwen2.5-1.5B_dataset generate_SmolLM2-1.7B_dataset generate_gemma-2-2b-it_dataset
+generate_Llama-3.1-8B_dataset:
+	python3 ./src/dataset/generate.py --config ./configs/Llama-3.1-8B-Instruct.yaml
 
 push_dataset_to_hf:
 	python3 ./src/dataset/push_hf.py
