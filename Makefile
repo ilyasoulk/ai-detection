@@ -47,8 +47,8 @@ compute_all_phd:
 	done
 
 compute_all_pca:
-	@mkdir -p ./logs/phd/zcamz
-	@mkdir -p ./logs/phd/ilyasoulk
+	@mkdir -p ./logs/pca/zcamz
+	@mkdir -p ./logs/pca/ilyasoulk
 	@for dataset in $(DATASETS); do \
 		python ./src/intrinsic_dim.py \
 			--dataset_path=$$dataset \
