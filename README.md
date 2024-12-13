@@ -127,12 +127,12 @@ The PHD analysis was performed with the following parameters:
 
 | Dataset          | Accuracy  | Human Precision | AI Precision  |
 |------------------|-----------|-----------------|---------------|
-| Qwen-2.5-1.5B    | -         | -              | -             |
-| SmolLM2-360M     | 0.6923    | **0.7912**     | 0.5538        |
-| SmolLM2-1.7B     | **0.7350**| 0.7667         | **0.7091**    |
-| Gemma-2-2b       | 0.5990    | 0.5980         | 0.6000        |
-| Llama-3.2-1B     | 0.6070    | 0.6058         | 0.6082        |
-| Llama-3.1-8B     | 0.6765    | 0.6768         | 0.6762        |
+| Qwen-2.5-1.5B    | 0.6633    |  0.6633         |    0.6633     |
+| SmolLM2-360M     | 0.6923    | **0.7912**      | 0.5538        |
+| SmolLM2-1.7B     | **0.7350**| 0.7667          | **0.7091**    |
+| Gemma-2-2b       | 0.5990    | 0.5980          | 0.6000        |
+| Llama-3.2-1B     | 0.6070    | 0.6058          | 0.6082        |
+| Llama-3.1-8B     | 0.6765    | 0.6768          | 0.6762        |
 
 The highest values in each column are marked in bold:
 - Accuracy: SmolLM2-1.7B with 0.7350
