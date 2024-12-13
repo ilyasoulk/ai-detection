@@ -112,7 +112,6 @@ The highest values in each column are marked in bold:
 - Human Precision: SmolLM2-360M with 0.9565
 - AI Precision: SmolLM2-360M with 0.7969
 
-Would you like any additional analysis of these metrics?
 ### PHD-based Analysis
 The PHD analysis was performed with the following parameters:
 - Number of tokens: 128
