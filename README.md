@@ -147,7 +147,7 @@ Results on SmolLM2-1.7B dataset:
 
 ### Key Insights
 - The `HuggingFaceTB-SmolLM2-360M` dataset achieved the highest accuracy of 89% with the n-gram method.
-- PCA-based analysis shows consistent performance across different models, with accuracies ranging from 58% to 67%.
+- PCA-based analysis shows consistent performance across different models, with accuracies ranging from 58% to 89%.
 - RoBERTa fine-tuning achieves strong results with particularly high precision for AI text detection.
 - Zero-shot transfer to new domains remains challenging but shows promising results.
 
