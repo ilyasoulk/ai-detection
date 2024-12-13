@@ -93,7 +93,7 @@ However, the results are pretty low showing that our method has a hard time afte
 
 ### PCA-based Analysis
 The PCA analysis was performed with the following parameters:
-- Maximum number of tokens: 512
+- Number of tokens: 128
 - Number of components: 150
 - Variance threshold: 95%
 
@@ -109,7 +109,7 @@ Results across datasets:
 
 ### PHD-based Analysis
 The PHD analysis was performed with the following parameters:
-- Maximum number of tokens: 512
+- Number of tokens: 128
 - alpha=1.0
 - metric="euclidean
 - n_reruns=3

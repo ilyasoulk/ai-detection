@@ -20,7 +20,7 @@ class IntrinsicDimAnalyzer:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.embedder = AutoModel.from_pretrained(embedding_model, device_map="cuda")
         self.batch_size = 10
-        self.min_tokens = 512
+        self.min_tokens = 128
 
     def embed(self, texts):
         tokens = self.tokenizer(
